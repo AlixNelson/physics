@@ -7,7 +7,7 @@
 typedef struct {
     double x;
     double y; 
-} vector; // 用一个结构体定义二维数组，可以是向量或坐标
+} vector; // 用一个结构体定义，可以是向量或坐标
 typedef struct {
     vector start;
     vector end;
