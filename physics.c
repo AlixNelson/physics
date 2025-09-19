@@ -3,12 +3,11 @@
 #include <stdbool.h>
 #include <math.h>
 
-#define G 9.8
-
 typedef struct {
     double x;
     double y; 
 } vector; // 用一个结构体定义，可以是向量或坐标
+
 typedef struct {
     vector start;
     vector end;
@@ -52,7 +51,7 @@ vector divide_vv(vector a, vector b) { // 除法虽然大概不会用到但还�
     };
     return dived;
 }
-float cross_product(vector a, vector b) { // 叉乘，有关角动量
+float cross_product(vector a, vector b) { // 叉乘，有关角动量，有关相交检测
     float crossed = a.x * b.y - a.y * b.x;
     return crossed;
 }
@@ -82,6 +81,7 @@ vector divide_vd(vector a, double b) {
 // 其他暂时不定义，估计不会用到
 
 object car = {0};
+const vector G = {.x=0,.y=9.8};
 
 vector square[4] = { // 这是一个正方体的原型
     {-1,-1},{-1,1},{1,1},{1,-1}
@@ -101,24 +101,24 @@ void init(object *car) {
     car->point = init_polygonal(square, count, 2);
     car->point_count = count;
     car->mass = 1000;
-    car->position.x = 0;
-    car->position.y = 0;
-    car->F.x = 200;
-    car->F.y = 300;
+    car->position.x = 2;
+    car->position.y = 2;
+    car->F.x = 0;
+    // car->F.y = 30000;
     /*
     car = (object) {.mass = 1000,.position = {.x = 0,.y = 0},.v = {.x = 0,.y = 0,},.F = {.x = 200,.y = 300,}};
     没用的东西，这是没有线条和点，只有质心时的初始化
     */
 }
 
-void newton(object *c, float t) {  // 牛顿第二定律
-    vector F = c->F;
+void newton(object *obj, float t) { // 牛顿第二定律
+    vector F = obj->F;
     vector a = { // 加速度
-        .x = F.x / c->mass,
-        .y = F.y / c->mass,
+        .x = F.x / obj->mass,
+        .y = F.y / obj->mass,
     };
     vector accelerate = mut_vd(a, t); // 速度变量
-    c->v = add_vv(c->v, accelerate);
+    obj->v = add_vv(obj->v, accelerate);
 }
 
 line* make_lines(object obj) { // 将物体的点向量化，并返回一个line数组
@@ -136,14 +136,49 @@ line* make_lines(object obj) { // 将物体的点向量化，并返回一个line
     return lines;
 }
 
-bool cross(line a, line b) { // 判断两线段是否相交，返回布尔值
+void gravity(object *obj, float t) { // 重力，本来想直接用牛顿第二定律实现，但好像单独定义一个反而更加省事
+    vector accelerate = mut_vd(G, t);
+    obj->v = sub_vv(obj->v, accelerate);
 }
 
+int sign_lp(vector a, vector b, vector c) { // 检测点c与向量ab的相对位置，左右或重合
+    vector ab = sub_vv(b, a);
+    vector ac = sub_vv(c, a);
+    float cp = cross_product(ab, ac); // 叉乘，判断点c在向量ab的相对位置
+    if (cp > 0) return 1; // 左侧
+    else if (cp < 0) return -1; // 右侧
+    else return 0; // 重合
+}
+
+bool cross(line a, line b) { // 判断两线段是否相交，返回布尔值
+    vector as = a.start;
+    vector ae = a.end;
+    vector bs = b.start;
+    vector be = b.end;
+
+    int sign_asebs = sign_lp(as, ae, bs); // b的起点相对于向量a的位置
+    int sign_asebe = sign_lp(as, ae ,be); // b的终点呢
+    int sign_bseas = sign_lp(bs, be, as); // a的起点相对于向量b的位置
+    int sign_bseae = sign_lp(bs, be, ae); // a的终点呢
+
+    // 如果两个向量的起点与重点相互都是不同侧，则可以认定两个向量相互跨越，即相交
+    if (sign_asebe * sign_asebe < 0 && sign_bseas * sign_bseae < 0) { 
+        return true;
+    } 
+    return false;
+}
+
+bool crush() {
+}
+
+/*
 int main(void) {
     printf("%f,%f\n", car.v.x, car.v.y);
     init(&car);
     printf("%f,%f\n", car.v.x, car.v.y);
     newton(&car, 2);
+    printf("v:%f,%f\n", car.v.x, car.v.y);
+    gravity(&car, 2);
     printf("v:%f,%f\n", car.v.x, car.v.y);
     line* lines = make_lines(car);
     int count = car.point_count;
@@ -159,3 +194,4 @@ int main(void) {
     system("pause");
     return 0;
 }
+*/
