@@ -170,7 +170,8 @@ bool cross(line a, line b) { // 判断两线段是否相交，返回布尔值
 
 bool crush() {
 }
-
+// 要再往前走就必须得有图形了
+// 这个模块暂时搁置，先做显示
 /*
 int main(void) {
     printf("%f,%f\n", car.v.x, car.v.y);
