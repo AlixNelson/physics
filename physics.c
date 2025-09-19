@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <math.h>
 
 #define G 9.8
@@ -13,9 +14,9 @@ typedef struct {
     vector end;
 } line; // 线段，由首尾两个坐标定义，运算时被解为一个表达式，它是组成实体的基本单位
 typedef struct {
-    vector *point; // 顶点
+    vector *point; // 顶点，定义时务必确保可以首尾相连，务必确保顺序，否则会出现严重问题，参见函数init_polygonal和make_lines
     int point_count; // 顶点的数量
-    vector position; // 重心
+    vector position; // 位置，等同于质心
     float mass; // 质量
     vector v; // 线速度
     vector F; // 合力
@@ -85,17 +86,20 @@ object car = {0};
 vector square[4] = { // 这是一个正方体的原型
     {-1,-1},{-1,1},{1,1},{1,-1}
 };
+// 所有原型在被定义时务必顺序（顺时针或逆时针单程），否则在向量化时会发生严重逻辑问题, 参见函数init_polygonal和make_lines
 
-vector* init_polygonal/*初始化多边形*/(vector *points/*顶点数组*/, int count, float times /*倍率*/) {
+vector* init_polygonal/*初始化多边形*/(vector *points/*顶点数组*/,int count/*顶点数量，在init函数中被计算*/, float times /*倍率*/) {
     vector* new_points = malloc(sizeof(vector) * count);
     for (int i = 0; i < count; ++i) {
         new_points[i] = mut_vd(points[i], times);
     };
+    return new_points;
 }
 
 void init(object *car) {
-    car->point = init_polygonal(square, 4, 2);
-    car->point_count = 4;
+    int count = sizeof(square)/sizeof(vector);
+    car->point = init_polygonal(square, count, 2);
+    car->point_count = count;
     car->mass = 1000;
     car->position.x = 0;
     car->position.y = 0;
@@ -103,7 +107,7 @@ void init(object *car) {
     car->F.y = 300;
     /*
     car = (object) {.mass = 1000,.position = {.x = 0,.y = 0},.v = {.x = 0,.y = 0,},.F = {.x = 200,.y = 300,}};
-    没用的东西，这是没有线条时的初始化
+    没用的东西，这是没有线条和点，只有质心时的初始化
     */
 }
 
@@ -117,21 +121,41 @@ void newton(object *c, float t) {  // 牛顿第二定律
     c->v = add_vv(c->v, accelerate);
 }
 
-void vectors(object obj) { 
-/*
-将多边形的顶点向量化 可是真的需要这么做吗？
-或许可以直接根据点的坐标判断？
-这两个路线我都没有认真考虑过
-*/
+line* make_lines(object obj) { // 将物体的点向量化，并返回一个line数组
+    int count = obj.point_count;
+    line* lines = malloc(count * sizeof(line));
+    for (int i = 0; i < count; i++) { // 这个循环将多边形首尾相连遍历
+        if (i == count-1) {
+            lines[i].start = obj.point[i];
+            lines[i].end = obj.point[0];
+        } else {
+        lines[i].start = obj.point[i];
+        lines[i].end = obj.point[i+1];
+        }
+    }
+    return lines;
 }
 
+bool cross(line a, line b) { // 判断两线段是否相交，返回布尔值
+}
 
 int main(void) {
     printf("%f,%f\n", car.v.x, car.v.y);
     init(&car);
     printf("%f,%f\n", car.v.x, car.v.y);
     newton(&car, 2);
-    printf("%f,%f\n", car.v.x, car.v.y);
+    printf("v:%f,%f\n", car.v.x, car.v.y);
+    line* lines = make_lines(car);
+    int count = car.point_count;
+    for (int i = 0; i < count; i++) {
+        printf("lines%lf,%lf,%lf,%lf\n", 
+            lines[i].start.x,
+            lines[i].start.y,
+            lines[i].end.x,
+            lines[i].end.y
+        );
+    }
+    free(lines);
     system("pause");
     return 0;
 }
