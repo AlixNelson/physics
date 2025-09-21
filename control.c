@@ -6,28 +6,28 @@
 
 #include "physics.c"
 
-#define FPS 60.0 // Ö¡Êı
-#define delta_t (1.0 / FPS) // Ã¿´ÎÑ­»·Ê±¼ä
+#define FPS 60.0 // å¸§æ•°
+#define delta_t (1.0 / FPS) // æ¯æ¬¡å¾ªç¯æ—¶é—´
 
-// »òĞíÓ¦¸Ã´«ÈëobjectÀàµÄ¶ÔÏó
-bool running_status = true; // ¿ª¹Ø
+// æˆ–è®¸åº”è¯¥ä¼ å…¥objectç±»çš„å¯¹è±¡
+bool running_status = true; // å¼€å…³
 
-void sleep_micro(unsigned long m_seconds) { // Ë¯Ãßº¯Êı£¬´«ÈëºÁÃëÊı
-    LARGE_INTEGER freq, start, end; // Õâ¸öÊı¾İÀàĞÍ±¾ÖÊÊÇÓĞi32ºÍÒ»¸öLongLong(¼´i64)³ÉÔ±µÄ½á¹¹Ìå£¬ÓÖÊÇwinµÄÀúÊ·°ü¸¤£¬µ«ÊÇÈ¸Ê³ºÃÓÃ
-    QueryPerformanceFrequency(&freq); // ½«¾«È·Ê±ÖÓµÄÆµÂÊ¸³Öµ¸ø½á¹¹ÌåÄÚµÄi64³ÉÔ±
-    QueryPerformanceCounter(&start); // »ñÈ¡¾«È·Ê±ÖÓµÄµ±Ç°¼ÆÊı
-    // ×¢Òâ£¬¾«×¼Ê±ÖÓµÄ±¾ÖÊÊÇÒ»¸ö¸ßÆµÀÛ¼Ó£¬ËüµÄ·µ»ØÖµÊÇÒ»¸öÕûÊı£¬ÊÇËüÄ¿Ç°¾­¹ıµÄÑ­»·Êı£¬ËùÒÔĞèÒª³ıÒÔÆµÂÊ²ÅÄÜµÃµ½ÃëÊı
+void sleep_micro(unsigned long m_seconds) { // ç¡çœ å‡½æ•°ï¼Œä¼ å…¥æ¯«ç§’æ•°
+    LARGE_INTEGER freq, start, end; // è¿™ä¸ªæ•°æ®ç±»å‹æœ¬è´¨æ˜¯æœ‰i32å’Œä¸€ä¸ªLongLong(å³i64)æˆå‘˜çš„ç»“æ„ä½“ï¼Œåˆæ˜¯winçš„å†å²åŒ…è¢±ï¼Œä½†æ˜¯é›€é£Ÿå¥½ç”¨
+    QueryPerformanceFrequency(&freq); // å°†ç²¾ç¡®æ—¶é’Ÿçš„é¢‘ç‡èµ‹å€¼ç»™ç»“æ„ä½“å†…çš„i64æˆå‘˜
+    QueryPerformanceCounter(&start); // è·å–ç²¾ç¡®æ—¶é’Ÿçš„å½“å‰è®¡æ•°
+    // æ³¨æ„ï¼Œç²¾å‡†æ—¶é’Ÿçš„æœ¬è´¨æ˜¯ä¸€ä¸ªé«˜é¢‘ç´¯åŠ ï¼Œå®ƒçš„è¿”å›å€¼æ˜¯ä¸€ä¸ªæ•´æ•°ï¼Œæ˜¯å®ƒç›®å‰ç»è¿‡çš„å¾ªç¯æ•°ï¼Œæ‰€ä»¥éœ€è¦é™¤ä»¥é¢‘ç‡æ‰èƒ½å¾—åˆ°ç§’æ•°
 
-    double delta = 0; // ÓÃÀ´¼ÆÁ¿Ê±¼ä±ä¸üÁ¿(Ãë)
-    double target_seconds = m_seconds / 1000000.0; // ÕâÊÇÎÒÃÇĞèÒªË¯µÄÃëÊı(ºÁÃë×ªÃë)
+    double delta = 0; // ç”¨æ¥è®¡é‡æ—¶é—´å˜æ›´é‡(ç§’)
+    double target_seconds = m_seconds / 1000000.0; // è¿™æ˜¯æˆ‘ä»¬éœ€è¦ç¡çš„ç§’æ•°(æ¯«ç§’è½¬ç§’)
 
     while (delta < target_seconds) {
-        QueryPerformanceCounter(&end); // »ñÈ¡¾«È·Ê±ÖÓµ±Ç°¼ÆÊı
-        delta = (double) (end.QuadPart - start.QuadPart) / freq.QuadPart; // »ñµÃ¾­¹ıµÄÃëÊı
+        QueryPerformanceCounter(&end); // è·å–ç²¾ç¡®æ—¶é’Ÿå½“å‰è®¡æ•°
+        delta = (double) (end.QuadPart - start.QuadPart) / freq.QuadPart; // è·å¾—ç»è¿‡çš„ç§’æ•°
     }
 }
 
-unsigned long get_time() {  // »ñÈ¡µ±Ç°Ê±¼ä£¬»ù±¾Âß¼­ºÍÉÏÒ»¸öº¯ÊıÍêÈ«Ò»ÖÂ
+unsigned long get_time() {  // è·å–å½“å‰æ—¶é—´ï¼ŒåŸºæœ¬é€»è¾‘å’Œä¸Šä¸€ä¸ªå‡½æ•°å®Œå…¨ä¸€è‡´
     LARGE_INTEGER freq, time;
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&time);
@@ -37,23 +37,23 @@ unsigned long get_time() {  // »ñÈ¡µ±Ç°Ê±¼ä£¬»ù±¾Âß¼­ºÍÉÏÒ»¸öº¯ÊıÍêÈ«Ò»ÖÂ
 int main() {
 
     init(&car);
-    // ÏÂÃæÊÇ»·¾³±äÁ¿
-    const double fps = 60; // Ö¡Êı
-    const double target_delta_t = 1 / fps; // Ä¿±êÖ¡Ê±¼ä£¬ÓÃÀ´½øĞĞÎïÀíÄ£Äâ
-    double frame_delta_time; // Êµ¼ÊÖ¡Ê±¼ä£¬ÔÚÑ­»·ÄÚ±»¼ÆÁ¿
-    const unsigned long time_per_frame = 1000000 / fps; // Ã¿Ö¡Î¢ÃëÊı
-    double accumulator = 0; // ¼ÆÁ¿×ÜÊ±¼ä
-    unsigned long start_time = get_time(); // Õâ¸öÑ­»·¿ªÊ¼µÄÊ±¼ä
-    // double frame_start_time = 0; // Ö¡ÆğÊ¼Ê±¼ä
+    // ä¸‹é¢æ˜¯ç¯å¢ƒå˜é‡
+    const double fps = 60; // å¸§æ•°
+    const double target_delta_t = 1 / fps; // ç›®æ ‡å¸§æ—¶é—´ï¼Œç”¨æ¥è¿›è¡Œç‰©ç†æ¨¡æ‹Ÿ
+    double frame_delta_time; // å®é™…å¸§æ—¶é—´ï¼Œåœ¨å¾ªç¯å†…è¢«è®¡é‡
+    const unsigned long time_per_frame = 1000000 / fps; // æ¯å¸§å¾®ç§’æ•°
+    double accumulator = 0; // è®¡é‡æ€»æ—¶é—´
+    unsigned long start_time = get_time(); // è¿™ä¸ªå¾ªç¯å¼€å§‹çš„æ—¶é—´
+    // double frame_start_time = 0; // å¸§èµ·å§‹æ—¶é—´
 
-    // ÏÂÃæÊÇÑ­»·ÖĞµÄ±äÁ¿
-    unsigned long frame_start = 0; // µ±Ç°Ñ­»·µÄÆğÊ¼Ê±¼ä
-    int frame_count = 0; // Ê±¼ä¼ÆÊıÆ÷
+    // ä¸‹é¢æ˜¯å¾ªç¯ä¸­çš„å˜é‡
+    unsigned long frame_start = 0; // å½“å‰å¾ªç¯çš„èµ·å§‹æ—¶é—´
+    int frame_count = 0; // æ—¶é—´è®¡æ•°å™¨
     unsigned long frame_end_time, frame_start_time;
     frame_start_time = get_time();
 
 
-    while (running_status) { // ¿ØÖÆÑ­»·Ö÷Ìå
+    while (running_status) { // æ§åˆ¶å¾ªç¯ä¸»ä½“
         frame_start = get_time();
 
         frame_end_time = get_time();
@@ -64,9 +64,9 @@ int main() {
             frame_delta_time = 0.25;
         }
 
-        accumulator += frame_delta_time; // ÀÛ¼ÆÊ±¼ä¼ÆÊıÆ÷
+        accumulator += frame_delta_time; // ç´¯è®¡æ—¶é—´è®¡æ•°å™¨
 
-        while (accumulator >= target_delta_t) { // ¸üĞÂ×´Ì¬
+        while (accumulator >= target_delta_t) { // æ›´æ–°çŠ¶æ€
             newton(&car); 
             /*
 
@@ -88,7 +88,7 @@ int main() {
         };
 
         if (frame_count % (int)fps == 0) {
-            printf("¼ÓËÙ¶È£º(%.2f,%.2f) | Î»ÖÃ£º(%.2f,%.2f) | ËÙ¶È£º(%.2f,%.2f)\n", car.a.x, car.a.y, car.position.x, car.position.y, car.v.x, car.v.y);
+            printf("åŠ é€Ÿåº¦ï¼š(%.2f,%.2f) | ä½ç½®ï¼š(%.2f,%.2f) | é€Ÿåº¦ï¼š(%.2f,%.2f)\n", car.a.x, car.a.y, car.position.x, car.position.y, car.v.x, car.v.y);
         }
 
         if (get_time() - start_time > 1000000 * 10) {
@@ -96,7 +96,7 @@ int main() {
         }
     };
 
-    printf("Ä£Äâ½áÊø\n");
+    printf("æ¨¡æ‹Ÿç»“æŸ\n");
     system("pause");
     return 0;
 }
