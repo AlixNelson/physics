@@ -8,8 +8,6 @@
 
 #define FPS 60.0 // 帧数
 #define delta_t (1.0 / FPS) // 每次循环时间
-#define Max_Frame_Skip 2 // 最高跳帧，每次循环最多可以在在这个帧数对应的时间中不进行检测
-// 物理运算需要时间，如果在运算完成前下一个循环已经到来，则必会出现逻辑卡死
 
 // 或许应该传入object类的对象
 bool running_status = true; // 开关
@@ -70,12 +68,15 @@ int main() {
 
         while (accumulator >= target_delta_t) { // 更新状态
             newton(&car); 
-
-            car.v.x += car.a.x * target_delta_t;
-            car.v.y += car.a.y * target_delta_t;
+            /*
 
             vector delta_position = mut_vd(car.v, target_delta_t);
             car.position = add_vv(car.position, delta_position);
+            */
+            car.v.x += car.a.x * target_delta_t;
+            car.v.y += car.a.y * target_delta_t;
+            
+            update(&car, target_delta_t);
 
             accumulator -= target_delta_t;
             frame_count += 1;

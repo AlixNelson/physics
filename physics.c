@@ -16,6 +16,7 @@ typedef struct {
     vector *point; // 顶点，定义时务必确保可以首尾相连，务必确保顺序，否则会出现严重问题，参见函数init_polygonal和make_lines
     int point_count; // 顶点的数量
     vector position; // 位置，等同于质心
+    vector prev_position; // 上一帧的位置，用于verlet积分
     float mass; // 质量
     vector v; // 线速度
     vector F; // 合力
@@ -89,7 +90,7 @@ vector square[4] = { // 这是一个正方体的原型
 };
 // 所有原型在被定义时务必顺序（顺时针或逆时针单程），否则在向量化时会发生严重逻辑问题, 参见函数init_polygonal和make_lines
 
-vector* init_polygonal/*初始化多边形*/(vector *points/*顶点数组*/,int count/*顶点数量，在init函数中被计算*/, float times /*倍率*/) {
+vector* init_polygonal/*初始化多边形*/(vector *points/*多边形原型*/,int count/*顶点数量，在init函数中被计算*/, float times /*倍率*/) {
     vector* new_points = malloc(sizeof(vector) * count);
     for (int i = 0; i < count; ++i) {
         new_points[i] = mut_vd(points[i], times);
@@ -104,13 +105,20 @@ void init(object *car) {
     car->mass = 1000;
     car->position.x = 2;
     car->position.y = 2;
+    car->prev_position = car->position;
     car->F.x = 0;
-    car->F.y = 9.8 * car->mass;
+    car->F.y = 9.8 * car->mass; // 始终给它一个重力，但这样过于简化，我害怕后续复杂状态下可能丢失
     car->a.y = 9.8;
     /*
     car = (object) {.mass = 1000,.position = {.x = 0,.y = 0},.v = {.x = 0,.y = 0,},.F = {.x = 200,.y = 300,}};
     没用的东西，这是没有线条和点，只有质心时的初始化
     */
+
+
+    double dt = 1.0 / 60.0; // 假设时间步长
+    car->prev_position.x = car->position.x - car->v.x * dt + 0.5 * car->a.x * dt * dt;
+    car->prev_position.y = car->position.y - car->v.y * dt + 0.5 * car->a.y * dt * dt;
+    // 最后三行是AI写的，因为prev_position应当表示上一次更新的位置，于是进行一次逆运算，否则将引入误差
 }
 
 void newton(object *obj) { // 牛顿第二定律，但只是将合力化为加速度
@@ -120,6 +128,16 @@ void newton(object *obj) { // 牛顿第二定律，但只是将合力化为加�
         .y = F.y / obj->mass,
     };
     obj->a = a;
+}
+
+void update(object *obj, double delta_t) { // 更新运动状态
+    vector old_position = obj->position;
+
+    // 从AI大仙那里求到的verlet积分，因为我发现原本的计算方式会积累不小的误差
+    obj->position.x = 2 * obj->position.x - obj->prev_position.x + obj->a.x * delta_t * delta_t;
+    obj->position.y = 2 * obj->position.y - obj->prev_position.y + obj->a.y * delta_t * delta_t;
+
+    obj->prev_position = old_position; // 这次计算的当前位置是下一次计算的上一位置
 }
 
 line* make_lines(object obj) { // 将物体的点向量化，并返回一个line数组
