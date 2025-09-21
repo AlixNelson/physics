@@ -19,6 +19,7 @@ typedef struct {
     float mass; // 质量
     vector v; // 线速度
     vector F; // 合力
+    vector a; // 加速度
     float ang_v; // 角速度
     float torque; // 扭矩
     float inertia; // 转动惯量
@@ -104,21 +105,21 @@ void init(object *car) {
     car->position.x = 2;
     car->position.y = 2;
     car->F.x = 0;
-    // car->F.y = 30000;
+    car->F.y = 9.8 * car->mass;
+    car->a.y = 9.8;
     /*
     car = (object) {.mass = 1000,.position = {.x = 0,.y = 0},.v = {.x = 0,.y = 0,},.F = {.x = 200,.y = 300,}};
     没用的东西，这是没有线条和点，只有质心时的初始化
     */
 }
 
-void newton(object *obj, float t) { // 牛顿第二定律
+void newton(object *obj) { // 牛顿第二定律，但只是将合力化为加速度
     vector F = obj->F;
     vector a = { // 加速度
         .x = F.x / obj->mass,
         .y = F.y / obj->mass,
     };
-    vector accelerate = mut_vd(a, t); // 速度变量
-    obj->v = add_vv(obj->v, accelerate);
+    obj->a = a;
 }
 
 line* make_lines(object obj) { // 将物体的点向量化，并返回一个line数组
@@ -136,10 +137,14 @@ line* make_lines(object obj) { // 将物体的点向量化，并返回一个line
     return lines;
 }
 
+/*
 void gravity(object *obj, float t) { // 重力，本来想直接用牛顿第二定律实现，但好像单独定义一个反而更加省事
     vector accelerate = mut_vd(G, t);
     obj->v = sub_vv(obj->v, accelerate);
 }
+果然还是大一统比较好，把a作为成员加入了object，并在控制循环中计算状态更新
+所以这个函数已经没用了
+*/
 
 int sign_lp(vector a, vector b, vector c) { // 检测点c与向量ab的相对位置，左右或重合
     vector ab = sub_vv(b, a);
