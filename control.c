@@ -6,27 +6,96 @@
 
 #include "physics.c"
 
-#define FPS 60.0 // å¸§æ•°
-#define delta_t (1.0 / FPS) // æ¯æ¬¡å¾ªç¯æ—¶é—´
-#define Max_Frame_Skip 2 // æœ€é«˜è·³å¸§ï¼Œæ¯æ¬¡å¾ªç¯æœ€å¤šå¯ä»¥åœ¨åœ¨è¿™ä¸ªå¸§æ•°å¯¹åº”çš„æ—¶é—´ä¸­ä¸è¿›è¡Œæ£€æµ‹
-// ç‰©ç†è¿ç®—éœ€è¦æ—¶é—´ï¼Œå¦‚æœåœ¨è¿ç®—å®Œæˆå‰ä¸‹ä¸€ä¸ªå¾ªç¯å·²ç»åˆ°æ¥ï¼Œåˆ™å¿…ä¼šå‡ºç°é€»è¾‘å¡æ­»
+#define FPS 60.0 // Ö¡Êı
+#define delta_t (1.0 / FPS) // Ã¿´ÎÑ­»·Ê±¼ä
+#define Max_Frame_Skip 2 // ×î¸ßÌøÖ¡£¬Ã¿´ÎÑ­»·×î¶à¿ÉÒÔÔÚÔÚÕâ¸öÖ¡Êı¶ÔÓ¦µÄÊ±¼äÖĞ²»½øĞĞ¼ì²â
+// ÎïÀíÔËËãĞèÒªÊ±¼ä£¬Èç¹ûÔÚÔËËãÍê³ÉÇ°ÏÂÒ»¸öÑ­»·ÒÑ¾­µ½À´£¬Ôò±Ø»á³öÏÖÂß¼­¿¨ËÀ
 
-// æˆ–è®¸åº”è¯¥ä¼ å…¥objectç±»çš„å¯¹è±¡
-bool simulate_running_status = true; // å¼€å…³
+// »òĞíÓ¦¸Ã´«ÈëobjectÀàµÄ¶ÔÏó
+bool running_status = true; // ¿ª¹Ø
 
-void sleep(unsigned long m_seconds) { // ç¡çœ å‡½æ•°ï¼Œä¼ å…¥æ¯«ç§’æ•°
-    LARGE_INTEGER freq, start, end; // è¿™ä¸ªæ•°æ®ç±»å‹æœ¬è´¨æ˜¯æœ‰i32å’Œä¸€ä¸ªLongLong(å³i64)æˆå‘˜çš„ç»“æ„ä½“ï¼Œåˆæ˜¯winçš„å†å²åŒ…è¢±ï¼Œä½†æ˜¯é›€é£Ÿå¥½ç”¨
-    QueryPerformanceFrequency(&freq); // å°†ç²¾ç¡®æ—¶é’Ÿçš„é¢‘ç‡èµ‹å€¼ç»™ç»“æ„ä½“å†…çš„i64æˆå‘˜
-    QueryPerformanceCounter(&start); // è·å–ç²¾ç¡®æ—¶é’Ÿçš„å½“å‰è®¡æ•°
-    // æ³¨æ„ï¼Œç²¾å‡†æ—¶é’Ÿçš„æœ¬è´¨æ˜¯ä¸€ä¸ªé«˜é¢‘ç´¯åŠ ï¼Œå®ƒçš„è¿”å›å€¼æ˜¯ä¸€ä¸ªæ•´æ•°ï¼Œæ˜¯å®ƒç›®å‰ç»è¿‡çš„å¾ªç¯æ•°ï¼Œæ‰€ä»¥éœ€è¦é™¤ä»¥é¢‘ç‡æ‰èƒ½å¾—åˆ°ç§’æ•°
+void sleep_micro(unsigned long m_seconds) { // Ë¯Ãßº¯Êı£¬´«ÈëºÁÃëÊı
+    LARGE_INTEGER freq, start, end; // Õâ¸öÊı¾İÀàĞÍ±¾ÖÊÊÇÓĞi32ºÍÒ»¸öLongLong(¼´i64)³ÉÔ±µÄ½á¹¹Ìå£¬ÓÖÊÇwinµÄÀúÊ·°ü¸¤£¬µ«ÊÇÈ¸Ê³ºÃÓÃ
+    QueryPerformanceFrequency(&freq); // ½«¾«È·Ê±ÖÓµÄÆµÂÊ¸³Öµ¸ø½á¹¹ÌåÄÚµÄi64³ÉÔ±
+    QueryPerformanceCounter(&start); // »ñÈ¡¾«È·Ê±ÖÓµÄµ±Ç°¼ÆÊı
+    // ×¢Òâ£¬¾«×¼Ê±ÖÓµÄ±¾ÖÊÊÇÒ»¸ö¸ßÆµÀÛ¼Ó£¬ËüµÄ·µ»ØÖµÊÇÒ»¸öÕûÊı£¬ÊÇËüÄ¿Ç°¾­¹ıµÄÑ­»·Êı£¬ËùÒÔĞèÒª³ıÒÔÆµÂÊ²ÅÄÜµÃµ½ÃëÊı
 
-    double delta = 0; // ç”¨æ¥è®¡é‡æ—¶é—´å˜æ›´é‡(ç§’)
-    double target_seconds = m_seconds / 1000000.0; // è¿™æ˜¯æˆ‘ä»¬éœ€è¦ç¡çš„ç§’æ•°(æ¯«ç§’è½¬ç§’)
+    double delta = 0; // ÓÃÀ´¼ÆÁ¿Ê±¼ä±ä¸üÁ¿(Ãë)
+    double target_seconds = m_seconds / 1000000.0; // ÕâÊÇÎÒÃÇĞèÒªË¯µÄÃëÊı(ºÁÃë×ªÃë)
 
     while (delta < target_seconds) {
-        QueryPerformanceCounter(&end); // è·å–ç²¾ç¡®æ—¶é’Ÿå½“å‰è®¡æ•°
-        delta = (double) (end.QuadPart - start.QuadPart) / freq.QuadPart; // è·å¾—ç»è¿‡çš„ç§’æ•°
+        QueryPerformanceCounter(&end); // »ñÈ¡¾«È·Ê±ÖÓµ±Ç°¼ÆÊı
+        delta = (double) (end.QuadPart - start.QuadPart) / freq.QuadPart; // »ñµÃ¾­¹ıµÄÃëÊı
     }
 }
 
-unsigned long get_time() {}
+unsigned long get_time() {  // »ñÈ¡µ±Ç°Ê±¼ä£¬»ù±¾Âß¼­ºÍÉÏÒ»¸öº¯ÊıÍêÈ«Ò»ÖÂ
+    LARGE_INTEGER freq, time;
+    QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&time);
+    return (unsigned long)((double)time.QuadPart * 1000000.0 / freq.QuadPart);
+}
+
+int main() {
+
+    init(&car);
+    // ÏÂÃæÊÇ»·¾³±äÁ¿
+    const double fps = 60; // Ö¡Êı
+    const double target_delta_t = 1 / fps; // Ä¿±êÖ¡Ê±¼ä£¬ÓÃÀ´½øĞĞÎïÀíÄ£Äâ
+    double frame_delta_time; // Êµ¼ÊÖ¡Ê±¼ä£¬ÔÚÑ­»·ÄÚ±»¼ÆÁ¿
+    const unsigned long time_per_frame = 1000000 / fps; // Ã¿Ö¡Î¢ÃëÊı
+    double accumulator = 0; // ¼ÆÁ¿×ÜÊ±¼ä
+    unsigned long start_time = get_time(); // Õâ¸öÑ­»·¿ªÊ¼µÄÊ±¼ä
+    // double frame_start_time = 0; // Ö¡ÆğÊ¼Ê±¼ä
+
+    // ÏÂÃæÊÇÑ­»·ÖĞµÄ±äÁ¿
+    unsigned long frame_start = 0; // µ±Ç°Ñ­»·µÄÆğÊ¼Ê±¼ä
+    int frame_count = 0; // Ê±¼ä¼ÆÊıÆ÷
+    unsigned long frame_end_time, frame_start_time;
+    frame_start_time = get_time();
+
+
+    while (running_status) { // ¿ØÖÆÑ­»·Ö÷Ìå
+        frame_start = get_time();
+
+        frame_end_time = get_time();
+        frame_delta_time = (double)(frame_end_time - frame_start_time) / 1000000;
+        frame_start_time = frame_end_time;
+
+        if (frame_delta_time > 0.25) {
+            frame_delta_time = 0.25;
+        }
+
+        accumulator += frame_delta_time; // ÀÛ¼ÆÊ±¼ä¼ÆÊıÆ÷
+
+        while (accumulator >= target_delta_t) { // ¸üĞÂ×´Ì¬
+            newton(&car); 
+
+            car.v.x += car.a.x * target_delta_t;
+            car.v.y += car.a.y * target_delta_t;
+
+            vector delta_position = mut_vd(car.v, target_delta_t);
+            car.position = add_vv(car.position, delta_position);
+
+            accumulator -= target_delta_t;
+            frame_count += 1;
+        };
+
+        unsigned long elapsed = get_time() - frame_start;
+        if (elapsed < time_per_frame) {
+            sleep_micro(time_per_frame - elapsed);
+        };
+
+        if (frame_count % (int)fps == 0) {
+            printf("¼ÓËÙ¶È£º(%.2f,%.2f) | Î»ÖÃ£º(%.2f,%.2f) | ËÙ¶È£º(%.2f,%.2f)\n", car.a.x, car.a.y, car.position.x, car.position.y, car.v.x, car.v.y);
+        }
+
+        if (get_time() - start_time > 1000000 * 10) {
+            running_status = false;
+        }
+    };
+
+    printf("Ä£Äâ½áÊø\n");
+    system("pause");
+    return 0;
+}
