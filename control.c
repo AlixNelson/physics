@@ -6,28 +6,28 @@
 
 #include "physics.c"
 
-#define FPS 60.0 // å¸§æ•°
-#define delta_t (1.0 / FPS) // æ¯æ¬¡å¾ªç¯æ—¶é—´
+#define FPS 60.0 // Ö¡Êı
+#define delta_t (1.0 / FPS) // Ã¿´ÎÑ­»·Ê±¼ä
 
-// æˆ–è®¸åº”è¯¥ä¼ å…¥objectç±»çš„å¯¹è±¡
-bool running_status = true; // å¼€å…³
+// »òĞíÓ¦¸Ã´«ÈëobjectÀàµÄ¶ÔÏó
+bool running_status = true; // ¿ª¹Ø
 
-void sleep_micro(unsigned long m_seconds) { // ç¡çœ å‡½æ•°ï¼Œä¼ å…¥æ¯«ç§’æ•°
-    LARGE_INTEGER freq, start, end; // è¿™ä¸ªæ•°æ®ç±»å‹æœ¬è´¨æ˜¯æœ‰i32å’Œä¸€ä¸ªLongLong(å³i64)æˆå‘˜çš„ç»“æ„ä½“ï¼Œåˆæ˜¯winçš„å†å²åŒ…è¢±ï¼Œä½†æ˜¯é›€é£Ÿå¥½ç”¨
-    QueryPerformanceFrequency(&freq); // å°†ç²¾ç¡®æ—¶é’Ÿçš„é¢‘ç‡èµ‹å€¼ç»™ç»“æ„ä½“å†…çš„i64æˆå‘˜
-    QueryPerformanceCounter(&start); // è·å–ç²¾ç¡®æ—¶é’Ÿçš„å½“å‰è®¡æ•°
-    // æ³¨æ„ï¼Œç²¾å‡†æ—¶é’Ÿçš„æœ¬è´¨æ˜¯ä¸€ä¸ªé«˜é¢‘ç´¯åŠ ï¼Œå®ƒçš„è¿”å›å€¼æ˜¯ä¸€ä¸ªæ•´æ•°ï¼Œæ˜¯å®ƒç›®å‰ç»è¿‡çš„å¾ªç¯æ•°ï¼Œæ‰€ä»¥éœ€è¦é™¤ä»¥é¢‘ç‡æ‰èƒ½å¾—åˆ°ç§’æ•°
+void sleep_micro(unsigned long m_seconds) { // Ë¯Ãßº¯Êı£¬´«ÈëºÁÃëÊı
+    LARGE_INTEGER freq, start, end; // Õâ¸öÊı¾İÀàĞÍ±¾ÖÊÊÇÓĞi32ºÍÒ»¸öLongLong(¼´i64)³ÉÔ±µÄ½á¹¹Ìå£¬ÓÖÊÇwinµÄÀúÊ·°ü¸¤£¬µ«ÊÇÈ¸Ê³ºÃÓÃ
+    QueryPerformanceFrequency(&freq); // ½«¾«È·Ê±ÖÓµÄÆµÂÊ¸³Öµ¸ø½á¹¹ÌåÄÚµÄi64³ÉÔ±
+    QueryPerformanceCounter(&start); // »ñÈ¡¾«È·Ê±ÖÓµÄµ±Ç°¼ÆÊı
+    // ×¢Òâ£¬¾«×¼Ê±ÖÓµÄ±¾ÖÊÊÇÒ»¸ö¸ßÆµÀÛ¼Ó£¬ËüµÄ·µ»ØÖµÊÇÒ»¸öÕûÊı£¬ÊÇËüÄ¿Ç°¾­¹ıµÄÑ­»·Êı£¬ËùÒÔĞèÒª³ıÒÔÆµÂÊ²ÅÄÜµÃµ½ÃëÊı
 
-    double delta = 0; // ç”¨æ¥è®¡é‡æ—¶é—´å˜æ›´é‡(ç§’)
-    double target_seconds = m_seconds / 1000000.0; // è¿™æ˜¯æˆ‘ä»¬éœ€è¦ç¡çš„ç§’æ•°(æ¯«ç§’è½¬ç§’)
+    double delta = 0; // ÓÃÀ´¼ÆÁ¿Ê±¼ä±ä¸üÁ¿(Ãë)
+    double target_seconds = m_seconds / 1000000.0; // ÕâÊÇÎÒÃÇĞèÒªË¯µÄÃëÊı(ºÁÃë×ªÃë)
 
     while (delta < target_seconds) {
-        QueryPerformanceCounter(&end); // è·å–ç²¾ç¡®æ—¶é’Ÿå½“å‰è®¡æ•°
-        delta = (double) (end.QuadPart - start.QuadPart) / freq.QuadPart; // è·å¾—ç»è¿‡çš„ç§’æ•°
+        QueryPerformanceCounter(&end); // »ñÈ¡¾«È·Ê±ÖÓµ±Ç°¼ÆÊı
+        delta = (double) (end.QuadPart - start.QuadPart) / freq.QuadPart; // »ñµÃ¾­¹ıµÄÃëÊı
     }
 }
 
-unsigned long get_time() {  // è·å–å½“å‰æ—¶é—´ï¼ŒåŸºæœ¬é€»è¾‘å’Œä¸Šä¸€ä¸ªå‡½æ•°å®Œå…¨ä¸€è‡´
+unsigned long get_time() {  // »ñÈ¡µ±Ç°Ê±¼ä£¬»ù±¾Âß¼­ºÍÉÏÒ»¸öº¯ÊıÍêÈ«Ò»ÖÂ
     LARGE_INTEGER freq, time;
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&time);
@@ -36,24 +36,33 @@ unsigned long get_time() {  // è·å–å½“å‰æ—¶é—´ï¼ŒåŸºæœ¬é€»è¾‘å’Œä¸Šä¸€ä¸ªå‡½æ
 
 int main() {
 
-    init(&car);
-    // ä¸‹é¢æ˜¯ç¯å¢ƒå˜é‡
-    const double fps = 60; // å¸§æ•°
-    const double target_delta_t = 1 / fps; // ç›®æ ‡å¸§æ—¶é—´ï¼Œç”¨æ¥è¿›è¡Œç‰©ç†æ¨¡æ‹Ÿ
-    double frame_delta_time; // å®é™…å¸§æ—¶é—´ï¼Œåœ¨å¾ªç¯å†…è¢«è®¡é‡
-    const unsigned long time_per_frame = 1000000 / fps; // æ¯å¸§å¾®ç§’æ•°
-    double accumulator = 0; // è®¡é‡æ€»æ—¶é—´
-    unsigned long start_time = get_time(); // è¿™ä¸ªå¾ªç¯å¼€å§‹çš„æ—¶é—´
-    // double frame_start_time = 0; // å¸§èµ·å§‹æ—¶é—´
+    init(&car, 1000, (vector){0, 0}, true); // ³õÊ¼»¯³µ³µ£¬Õâ¸ö¶ÔÏóÔÚºËĞÄÖĞ±»¶¨Òå
 
-    // ä¸‹é¢æ˜¯å¾ªç¯ä¸­çš„å˜é‡
-    unsigned long frame_start = 0; // å½“å‰å¾ªç¯çš„èµ·å§‹æ—¶é—´
-    int frame_count = 0; // æ—¶é—´è®¡æ•°å™¨
+    vector board_init[4] = { // ¶¨ÒåÒ»¸ö°å×ÓµÄÔ­ĞÍ
+        {-10, -1}, {-10, 1}, {10, 1}, {10, -1},
+    };
+    object board = {0};
+    init(&board, 1000, (vector){0, -100}, false); // ³õÊ¼»¯°å°å
+    object *obj_list[] = { &car, &board };
+
+    // ÏÂÃæÊÇ»·¾³±äÁ¿
+    const double fps = 60; // Ö¡Êı
+    const double target_delta_t = 1 / fps; // Ä¿±êÖ¡Ê±¼ä£¬ÓÃÀ´½øĞĞÎïÀíÄ£Äâ
+    double frame_delta_time; // Êµ¼ÊÖ¡Ê±¼ä£¬ÔÚÑ­»·ÄÚ±»¼ÆÁ¿
+    const unsigned long time_per_frame = 1000000 / fps; // Ã¿Ö¡Î¢ÃëÊı
+    double accumulator = 0; // ¼ÆÁ¿×ÜÊ±¼ä
+    unsigned long start_time = get_time(); // Õâ¸öÑ­»·¿ªÊ¼µÄÊ±¼ä
+    int len = sizeof(obj_list) / sizeof(object*);
+    // double frame_start_time = 0; // Ö¡ÆğÊ¼Ê±¼ä
+
+    // ÏÂÃæÊÇÑ­»·ÖĞµÄ±äÁ¿
+    unsigned long frame_start = 0; // µ±Ç°Ñ­»·µÄÆğÊ¼Ê±¼ä
+    int frame_count = 0; // Ê±¼ä¼ÆÊıÆ÷
     unsigned long frame_end_time, frame_start_time;
     frame_start_time = get_time();
 
 
-    while (running_status) { // æ§åˆ¶å¾ªç¯ä¸»ä½“
+    while (running_status) { // ¿ØÖÆÑ­»·Ö÷Ìå
         frame_start = get_time();
 
         frame_end_time = get_time();
@@ -64,39 +73,188 @@ int main() {
             frame_delta_time = 0.25;
         }
 
-        accumulator += frame_delta_time; // ç´¯è®¡æ—¶é—´è®¡æ•°å™¨
+        accumulator += frame_delta_time; // ÀÛ¼ÆÊ±¼ä¼ÆÊıÆ÷
+        // printf("Íâ²ãÑ­»·Íê³É");
 
-        while (accumulator >= target_delta_t) { // æ›´æ–°çŠ¶æ€
-            newton(&car); 
+        int index = 0;
+        line** line_list = NULL;
+
+        for (int i = 0; i < len; i++) { // ½«ËùÓĞ¶à±ßĞÎ³ÉÔ±ÏòÁ¿»¯
+            int line_len = obj_list[i]->point_count * sizeof(line*); // µ±Ç°ÔªËØµÄ¶¥µãÊı£¬¼´ÎªËüµÄÏß¶ÎÊı
+            object *obj = obj_list[i]; // ĞèÒª±»´¦ÀíµÄ¶ÔÏó
+            line* lines = make_lines(*obj); // Éú³ÉÕâ¸ö¶ÔÏóµÄÏß¶ÎÁĞ±í
             /*
-
-            vector delta_position = mut_vd(car.v, target_delta_t);
-            car.position = add_vv(car.position, delta_position);
+            for (int u = 0; u < line_len; u++) {
+                if (u % 100 == 0) {
+                    printf("%.16f, %.16f\n", lines[u].start.x, lines[u].start.y);
+                }
+            }
             */
-            car.v.x += car.a.x * target_delta_t;
-            car.v.y += car.a.y * target_delta_t;
+            line** temp = realloc(line_list, (index + 1) * sizeof(line*)); // ¶¯Ì¬·ÖÅäÄÚ´æ²¢½«µÃµ½µÄÏß¶ÎÊı×éÔİ´æ
+            if (temp == NULL) { // Èç¹û·ÖÅäÊ§°Ü
+                free(line_list);
+                exit(EXIT_FAILURE);
+            }
+            line_list = temp; // ½«±»·ÖÅäµÄÁÙÊ±¶şÎ¬ÁĞ±íĞ´Èë
+            line_list[index] = lines;
+            index++; // ¼ÆÊı
+            /*ÎÒÒª¿ªÊ¼Ğ´Ğ¡ÖÚ±äÌ¬Ëã·¨ÁË£¬Èç¹û¿´²»¶®Çë²»ÒªÎÊÎÒ£¬ÎÒ´ó¸ÅÒ²¿´²»¶®*/
+            /*¿ªÊ¼*/
+        };
+
+        for (int i = 0; i < len; i++) { // ¼ì²âÃ¿¸ö¶à±ßĞÎÊÇ·ñactive£¬²»activeµÄ²»¸üĞÂÔË¶¯×´Ì¬
+            // printf("½øÈë¶ş²ãÑ­»·Ñ­»·");
+            object *obj = obj_list[i];
+            // printf("¶ş²ãÑ­»·Íê³É");
+            bool is_cross = false;
+            if (obj->active == true) {
+                int active_count = obj->point_count;
+                // printf("Èı²ãÅĞ¶ÏÍê³É");
+                while (accumulator >= target_delta_t) { // ¸üĞÂ×´Ì¬
+                // printf("½øÈëÈı²ãÑ­»·");
+                newton(obj);
             
-            update(&car, target_delta_t);
+                car.v.x += car.a.x * target_delta_t;
+                car.v.y += car.a.y * target_delta_t;
+                
+                update(obj, target_delta_t);
 
-            accumulator -= target_delta_t;
-            frame_count += 1;
-        };
+                accumulator -= target_delta_t;
+                frame_count += 1;
+                
+                // ÏÂÃæÎÒÒª¿ªÊ¼Ğ´Ğ¡ÖÚ±äÌ¬Ëã·¨ÁË
+                if (i != 0 && len - i > 1) {
+                    for (int j = 0; j < i; j++) {
+                        line* lines = line_list[j]; // µÃµ½±íÊ¾´ËÊ±µü´úµ½µÄÒ»¸öobjectµÄÁ¬¶ÎµÄÒ»Î¬Êı×é£¬´æ´¢count¸ölineÀàĞÍµÄ½á¹¹Ìå
+                        int count = obj_list[j]->point_count;
+                        for (int q = 0; q < count; q++) {
+                            for (int p = 0; p < active_count; p++) {
+                                is_cross = cross(lines[q], line_list[i][p]);
+                                if (is_cross) {
+                                    printf("pong!");
+                                    break;
+                                };
+                            };
+                            if (is_cross) {
+                                printf("pong!");
+                                break;
+                            };
+                        };
+                        if (is_cross) {
+                            printf("pong!");
+                            break;
+                        };
+                    }; 
+                    if (is_cross) {
+                        printf("pong!");
+                        break;
+                    };
+                    for (int j = i+1; j < len; j++) {
+                        line* lines = line_list[j]; // µÃµ½±íÊ¾´ËÊ±µü´úµ½µÄÒ»¸öobjectµÄÁ¬¶ÎµÄÒ»Î¬Êı×é£¬´æ´¢count¸ölineÀàĞÍµÄ½á¹¹Ìå
+                        int count = obj_list[j]->point_count;
+                        for (int q = 0; q < count; q++) {
+                            for (int p = 0; p < active_count; p++) {
+                                is_cross = cross(lines[q], line_list[i][p]);
+                                if (is_cross) {
+                                    printf("pong!");
+                                    break;
+                                };
+                            };
+                            if (is_cross) {
+                                printf("pong!");
+                                break;
+                            };
+                        };
+                        if (is_cross) {
+                            printf("pong!");
+                            break;
+                        };
+                    };
+                    if (is_cross) {
+                        printf("pong!");
+                        break;
+                    };
+                };
+                if (i == 0) {
+                    for (int j = i+1; j < len; j++) {
+                        line* lines = line_list[j]; // µÃµ½±íÊ¾´ËÊ±µü´úµ½µÄÒ»¸öobjectµÄÁ¬¶ÎµÄÒ»Î¬Êı×é£¬´æ´¢count¸ölineÀàĞÍµÄ½á¹¹Ìå
+                        int count = obj_list[j]->point_count;
+                        for (int q = 0; q < count; q++) {
+                            for (int p = 0; p < active_count; p++) {
+                                is_cross = cross(lines[q], line_list[i][p]);
+                                if (is_cross) {
+                                    printf("pong!");
+                                    break;
+                                };
+                            };
+                            if (is_cross) {
+                                printf("pong!");
+                                break;
+                            };
+                        };
+                        if (is_cross) {
+                            printf("pong!");
+                            break;
+                        };
+                    };
+                    if (is_cross) {
+                        printf("pong!");
+                        break;
+                    };
+                };
+                if (i == len-1) {
+                    for (int j = i+1; j < len; j++) {
+                        line* lines = line_list[j]; // µÃµ½±íÊ¾´ËÊ±µü´úµ½µÄÒ»¸öobjectµÄÁ¬¶ÎµÄÒ»Î¬Êı×é£¬´æ´¢count¸ölineÀàĞÍµÄ½á¹¹Ìå
+                        int count = obj_list[j]->point_count;
+                        for (int q = 0; q < count; q++) {
+                            for (int p = 0; p < active_count; p++) {
+                                is_cross = cross(lines[q], line_list[i][p]);
+                                if (is_cross) {
+                                    printf("pong!");
+                                    break;
+                                };
+                            };
+                            if (is_cross) {
+                                printf("pong!");
+                                break;
+                            };
+                        };
+                        if (is_cross) {
+                            printf("pong!");
+                            break;
+                        };
+                    };
+                    if (is_cross) {
+                        printf("pong!");
+                        break;
+                    };
+                };
+                };
+                // ÉÏÊöÊÇÊ·ÉÏÈõÖÇ´úÂë£¬ÄãÄÜ¶ÔÊÓÊ®Ãë²»Ğ¦Âğ
+                // Ç§Íò²»Òª¶Á¶®£¬Ò²²»ÒªÈÃÎÒ½â¶Á
 
-        unsigned long elapsed = get_time() - frame_start;
-        if (elapsed < time_per_frame) {
-            sleep_micro(time_per_frame - elapsed);
-        };
+                unsigned long elapsed = get_time() - frame_start;
+                if (elapsed < time_per_frame) {
+                    sleep_micro(time_per_frame - elapsed);
+                };
 
-        if (frame_count % (int)fps == 0) {
-            printf("åŠ é€Ÿåº¦ï¼š(%.2f,%.2f) | ä½ç½®ï¼š(%.2f,%.2f) | é€Ÿåº¦ï¼š(%.2f,%.2f)\n", car.a.x, car.a.y, car.position.x, car.position.y, car.v.x, car.v.y);
+                if (frame_count % (int)fps == 0) {
+                    printf("¼ÓËÙ¶È£º(%.2f,%.2f) | Î»ÖÃ£º(%.2f,%.2f) | ËÙ¶È£º(%.2f,%.2f)\n", car.a.x, car.a.y, car.position.x, car.position.y, car.v.x, car.v.y);
+                };
+                
+                if (is_cross) {
+                    printf("pong!");
+                }
+
+                if (get_time() - start_time > 1000000 * 10) {
+                    running_status = false;
+                };
+            }
         }
-
-        if (get_time() - start_time > 1000000 * 10) {
-            running_status = false;
-        }
+       
     };
 
-    printf("æ¨¡æ‹Ÿç»“æŸ\n");
+    printf("Ä£Äâ½áÊø\n");
     system("pause");
     return 0;
 }
