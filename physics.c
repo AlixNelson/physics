@@ -24,6 +24,7 @@ typedef struct {
     float ang_v; // 角速度
     float torque; // 扭矩
     float inertia; // 转动惯量
+    bool active;
     // 我不会角动量定理，但先定义再说
 } object; // 实体，由许多顶点定义，运算时两个顶点被解为一个线段，由线段表达式是否相交来判断碰撞
 
@@ -42,7 +43,7 @@ vector sub_vv(vector a, vector b) { // 减法
     };
     return subed;
 }
-float mut_vv(vector a, vector b) { // 点乘 它的物理意义决定它大概不会超出float范围，大概...
+double mut_vv(vector a, vector b) { // 点乘
     float muted = a.x * b.x + a.y * b.y;
     return muted;
 }
@@ -56,6 +57,10 @@ vector divide_vv(vector a, vector b) { // 除法虽然大概不会用到但还�
 float cross_product(vector a, vector b) { // 叉乘，有关角动量，有关相交检测
     float crossed = a.x * b.y - a.y * b.x;
     return crossed;
+}
+vector vector_n(vector l) { // 取法向量，方法是将向量旋转90°
+    vector n = {.x=l.x, .y=-l.y};
+    return n;
 }
 
 // 定义向量对数值的运算
@@ -98,22 +103,21 @@ vector* init_polygonal/*初始化多边形*/(vector *points/*多边形原型*/,i
     return new_points;
 }
 
-void init(object *car) {
+void init(object *car, float mass, vector position, bool active) {
     int count = sizeof(square)/sizeof(vector);
     car->point = init_polygonal(square, count, 2);
     car->point_count = count;
-    car->mass = 1000;
-    car->position.x = 2;
-    car->position.y = 2;
+    car->mass = mass;
+    car->position = position;
     car->prev_position = car->position;
     car->F.x = 0;
-    car->F.y = 9.8 * car->mass; // 始终给它一个重力，但这样过于简化，我害怕后续复杂状态下可能丢失
-    car->a.y = 9.8;
+    car->F.y = -9.8 * car->mass; // 始终给它一个重力，但这样过于简化，我害怕后续复杂状态下可能丢失
+    car->a.y = -9.8;
+    car->active = active;
     /*
     car = (object) {.mass = 1000,.position = {.x = 0,.y = 0},.v = {.x = 0,.y = 0,},.F = {.x = 200,.y = 300,}};
     没用的东西，这是没有线条和点，只有质心时的初始化
     */
-
 
     double dt = 1.0 / 60.0; // 假设时间步长
     car->prev_position.x = car->position.x - car->v.x * dt + 0.5 * car->a.x * dt * dt;
@@ -145,11 +149,11 @@ line* make_lines(object obj) { // 将物体的点向量化，并返回一个line
     line* lines = malloc(count * sizeof(line));
     for (int i = 0; i < count; i++) { // 这个循环将多边形首尾相连遍历
         if (i == count-1) {
-            lines[i].start = obj.point[i];
-            lines[i].end = obj.point[0];
+            lines[i].start = add_vv(obj.point[i], obj.position);
+            lines[i].end = add_vv(obj.point[0], obj.position);
         } else {
-        lines[i].start = obj.point[i];
-        lines[i].end = obj.point[i+1];
+        lines[i].start = add_vv(obj.point[i], obj.position);
+        lines[i].end = add_vv(obj.point[i+1], obj.position);
         }
     }
     return lines;
@@ -163,6 +167,7 @@ void gravity(object *obj, float t) { // 重力，本来想直接用牛顿第二�
 果然还是大一统比较好，把a作为成员加入了object，并在控制循环中计算状态更新
 所以这个函数已经没用了
 */
+
 
 int sign_lp(vector a, vector b, vector c) { // 检测点c与向量ab的相对位置，左右或重合
     vector ab = sub_vv(b, a);
@@ -185,7 +190,7 @@ bool cross(line a, line b) { // 判断两线段是否相交，返回布尔值
     int sign_bseae = sign_lp(bs, be, ae); // a的终点呢
 
     // 如果两个向量的起点与重点相互都是不同侧，则可以认定两个向量相互跨越，即相交
-    if (sign_asebe * sign_asebe < 0 && sign_bseas * sign_bseae < 0) { 
+    if (sign_asebs * sign_asebe < 0 && sign_bseas * sign_bseae < 0) { 
         return true;
     } 
     return false;
