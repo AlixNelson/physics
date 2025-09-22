@@ -36,13 +36,13 @@ unsigned long get_time() {  // 获取当前时间，基本逻辑和上一个函数完全一致
 
 int main() {
 
-    init(&car, 1000, (vector){0, 0}, true); // 初始化车车，这个对象在核心中被定义
+    init(&car, 1000, (vector){0, 0}, 2, true); // 初始化车车，这个对象在核心中被定义
 
     vector board_init[4] = { // 定义一个板子的原型
-        {-10, -1}, {-10, 1}, {10, 1}, {10, -1},
+        {-1000, -1}, {-1000, 1}, {1000, 1}, {1000, -1},
     };
     object board = {0};
-    init(&board, 1000, (vector){0, -100}, false); // 初始化板板
+    init(&board, 1000, (vector){0, -100}, 1, false); // 初始化板板
     object *obj_list[] = { &car, &board };
 
     // 下面是环境变量
@@ -83,13 +83,6 @@ int main() {
             int line_len = obj_list[i]->point_count * sizeof(line*); // 当前元素的顶点数，即为它的线段数
             object *obj = obj_list[i]; // 需要被处理的对象
             line* lines = make_lines(*obj); // 生成这个对象的线段列表
-            /*
-            for (int u = 0; u < line_len; u++) {
-                if (u % 100 == 0) {
-                    printf("%.16f, %.16f\n", lines[u].start.x, lines[u].start.y);
-                }
-            }
-            */
             line** temp = realloc(line_list, (index + 1) * sizeof(line*)); // 动态分配内存并将得到的线段数组暂存
             if (temp == NULL) { // 如果分配失败
                 free(line_list);
@@ -98,6 +91,7 @@ int main() {
             line_list = temp; // 将被分配的临时二维列表写入
             line_list[index] = lines;
             index++; // 计数
+            
             /*我要开始写小众变态算法了，如果看不懂请不要问我，我大概也看不懂*/
             /*开始*/
         };
@@ -119,6 +113,13 @@ int main() {
                 
                 update(obj, target_delta_t);
 
+                if (line_list != NULL) {
+                    if (i >= 0) {
+                        if (line_list[i] != NULL) {free(line_list[i]);}
+                        line_list[i] = make_lines(*obj);
+                    }
+                }
+
                 accumulator -= target_delta_t;
                 frame_count += 1;
                 
@@ -131,22 +132,18 @@ int main() {
                             for (int p = 0; p < active_count; p++) {
                                 is_cross = cross(lines[q], line_list[i][p]);
                                 if (is_cross) {
-                                    printf("pong!");
                                     break;
                                 };
                             };
                             if (is_cross) {
-                                printf("pong!");
                                 break;
                             };
                         };
                         if (is_cross) {
-                            printf("pong!");
                             break;
                         };
                     }; 
                     if (is_cross) {
-                        printf("pong!");
                         break;
                     };
                     for (int j = i+1; j < len; j++) {
@@ -156,22 +153,18 @@ int main() {
                             for (int p = 0; p < active_count; p++) {
                                 is_cross = cross(lines[q], line_list[i][p]);
                                 if (is_cross) {
-                                    printf("pong!");
                                     break;
                                 };
                             };
                             if (is_cross) {
-                                printf("pong!");
                                 break;
                             };
                         };
                         if (is_cross) {
-                            printf("pong!");
                             break;
                         };
                     };
                     if (is_cross) {
-                        printf("pong!");
                         break;
                     };
                 };
@@ -183,17 +176,14 @@ int main() {
                             for (int p = 0; p < active_count; p++) {
                                 is_cross = cross(lines[q], line_list[i][p]);
                                 if (is_cross) {
-                                    printf("pong!");
                                     break;
                                 };
                             };
                             if (is_cross) {
-                                printf("pong!");
                                 break;
                             };
                         };
                         if (is_cross) {
-                            printf("pong!");
                             break;
                         };
                     };
@@ -210,28 +200,24 @@ int main() {
                             for (int p = 0; p < active_count; p++) {
                                 is_cross = cross(lines[q], line_list[i][p]);
                                 if (is_cross) {
-                                    printf("pong!");
                                     break;
                                 };
                             };
                             if (is_cross) {
-                                printf("pong!");
                                 break;
                             };
                         };
                         if (is_cross) {
-                            printf("pong!");
                             break;
                         };
                     };
                     if (is_cross) {
-                        printf("pong!");
                         break;
                     };
                 };
                 };
                 // 上述是史上弱智代码，你能对视十秒不笑吗
-                // 千万不要读懂，也不要让我解读
+                // 千万不要读，也不要让我解读
 
                 unsigned long elapsed = get_time() - frame_start;
                 if (elapsed < time_per_frame) {
@@ -244,6 +230,7 @@ int main() {
                 
                 if (is_cross) {
                     printf("pong!");
+                    printf("加速度：(%.2f,%.2f) | 位置：(%.2f,%.2f) | 速度：(%.2f,%.2f)\n", car.a.x, car.a.y, car.position.x, car.position.y, car.v.x, car.v.y);
                 }
 
                 if (get_time() - start_time > 1000000 * 10) {
@@ -251,7 +238,6 @@ int main() {
                 };
             }
         }
-       
     };
 
     printf("模拟结束\n");

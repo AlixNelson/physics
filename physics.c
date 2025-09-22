@@ -103,9 +103,9 @@ vector* init_polygonal/*初始化多边形*/(vector *points/*多边形原型*/,i
     return new_points;
 }
 
-void init(object *car, float mass, vector position, bool active) {
+void init(object *car, float mass, vector position,int times, bool active) {
     int count = sizeof(square)/sizeof(vector);
-    car->point = init_polygonal(square, count, 2);
+    car->point = init_polygonal(square, count, times);
     car->point_count = count;
     car->mass = mass;
     car->position = position;
@@ -190,9 +190,7 @@ bool cross(line a, line b) { // 判断两线段是否相交，返回布尔值
     int sign_bseae = sign_lp(bs, be, ae); // a的终点呢
 
     // 如果两个向量的起点与重点相互都是不同侧，则可以认定两个向量相互跨越，即相交
-    if (sign_asebs * sign_asebe < 0 && sign_bseas * sign_bseae < 0) { 
-        return true;
-    } 
+    if (sign_asebs * sign_asebe < 0 && sign_bseas * sign_bseae < 0) return true;
     return false;
 }
 
