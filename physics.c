@@ -134,12 +134,17 @@ void newton(object *obj) { // 牛顿第二定律，但只是将合力化为加�
     obj->a = a;
 }
 
-void update(object *obj, double delta_t) { // 更新运动状态
+void update(vector old_v, object *obj, double delta_t) { // 更新运动状态
     vector old_position = obj->position;
 
+    /*
     // 从AI大仙那里求到的verlet积分，因为我发现原本的计算方式会积累不小的误差
     obj->position.x = 2 * obj->position.x - obj->prev_position.x + obj->a.x * delta_t * delta_t;
     obj->position.y = 2 * obj->position.y - obj->prev_position.y + obj->a.y * delta_t * delta_t;
+    但是已经没用了，还得靠自己
+    */
+    obj->position.x += ((old_v.x + obj->v.x) / 2) * delta_t;
+    obj->position.y += ((old_v.y + obj->v.y) / 2) * delta_t;
 
     obj->prev_position = old_position; // 这次计算的当前位置是下一次计算的上一位置
 }
@@ -158,16 +163,6 @@ line* make_lines(object obj) { // 将物体的点向量化，并返回一个line
     }
     return lines;
 }
-
-/*
-void gravity(object *obj, float t) { // 重力，本来想直接用牛顿第二定律实现，但好像单独定义一个反而更加省事
-    vector accelerate = mut_vd(G, t);
-    obj->v = sub_vv(obj->v, accelerate);
-}
-果然还是大一统比较好，把a作为成员加入了object，并在控制循环中计算状态更新
-所以这个函数已经没用了
-*/
-
 
 int sign_lp(vector a, vector b, vector c) { // 检测点c与向量ab的相对位置，左右或重合
     vector ab = sub_vv(b, a);
@@ -194,8 +189,12 @@ bool cross(line a, line b) { // 判断两线段是否相交，返回布尔值
     return false;
 }
 
-bool crush() {
+void crush(object *car) { // 简单的碰撞反弹，只是将速度反转，将来实现动量定理之后一定要改
+    vector temp_v = car->v;
+    car->v.x = -temp_v.x;
+    car->v.y = -temp_v.y;
 }
+
 // 要再往前走就必须得有图形了
 // 这个模块暂时搁置，先做显示
 /*

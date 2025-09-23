@@ -108,10 +108,12 @@ int main() {
                 // printf("进入三层循环");
                 newton(obj);
             
+                vector old_v = obj->v;
+                // printf("%.16f, %.16f", old_v.x, old_v.y);
                 car.v.x += car.a.x * target_delta_t;
                 car.v.y += car.a.y * target_delta_t;
                 
-                update(obj, target_delta_t);
+                update(old_v, obj, target_delta_t);
 
                 if (line_list != NULL) {
                     if (i >= 0) {
@@ -124,7 +126,8 @@ int main() {
                 frame_count += 1;
                 
                 // 下面我要开始写小众变态算法了
-                if (i != 0 && len - i > 1) {
+                // 功能是遍历主动对象外的所有被动对象，使主动对象的所有边对被遍历到的被动对象的所有边进行相交检测，我把这视作一个简单的碰撞检测实现
+                if (i != 0 && len - i > 1) { // 如果i将object分为两个部分
                     for (int j = 0; j < i; j++) {
                         line* lines = line_list[j]; // 得到表示此时迭代到的一个object的连段的一维数组，存储count个line类型的结构体
                         int count = obj_list[j]->point_count;
@@ -168,7 +171,7 @@ int main() {
                         break;
                     };
                 };
-                if (i == 0) {
+                if (i == 0) { // 如果i恰好是最左端
                     for (int j = i+1; j < len; j++) {
                         line* lines = line_list[j]; // 得到表示此时迭代到的一个object的连段的一维数组，存储count个line类型的结构体
                         int count = obj_list[j]->point_count;
@@ -188,11 +191,10 @@ int main() {
                         };
                     };
                     if (is_cross) {
-                        printf("pong!");
                         break;
                     };
                 };
-                if (i == len-1) {
+                if (i == len-1) { // 如果i恰好是最右端
                     for (int j = i+1; j < len; j++) {
                         line* lines = line_list[j]; // 得到表示此时迭代到的一个object的连段的一维数组，存储count个line类型的结构体
                         int count = obj_list[j]->point_count;
@@ -222,18 +224,19 @@ int main() {
                 unsigned long elapsed = get_time() - frame_start;
                 if (elapsed < time_per_frame) {
                     sleep_micro(time_per_frame - elapsed);
-                };
+                };  // 这是干什么的来着？
 
                 if (frame_count % (int)fps == 0) {
                     printf("加速度：(%.2f,%.2f) | 位置：(%.2f,%.2f) | 速度：(%.2f,%.2f)\n", car.a.x, car.a.y, car.position.x, car.position.y, car.v.x, car.v.y);
                 };
                 
-                if (is_cross) {
+                if (is_cross) { // 如果碰撞为真
                     printf("pong!");
+                    crush(&car);
                     printf("加速度：(%.2f,%.2f) | 位置：(%.2f,%.2f) | 速度：(%.2f,%.2f)\n", car.a.x, car.a.y, car.position.x, car.position.y, car.v.x, car.v.y);
-                }
+                };
 
-                if (get_time() - start_time > 1000000 * 10) {
+                if (get_time() - start_time > 1000000 * 20) { // 测试用输出，模拟20s
                     running_status = false;
                 };
             }
