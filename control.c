@@ -36,13 +36,16 @@ unsigned long get_time() {  // 获取当前时间，基本逻辑和上一个函数完全一致
 
 int main() {
 
-    init(&car, 1000, (vector){0, 0}, 2, true); // 初始化车车，这个对象在核心中被定义
+    vector square[4] = { // 这是一个正方体的原型
+    {-1,-1},{-1,1},{1,1},{1,-1}
+    };
+    // 所有原型在被定义时务必顺序（顺时针或逆时针单程），否则在向量化时会发生严重逻辑问题, 参见函数physics.c中的init_polygonal()和make_lines()
+    object car = init(square, 1000, (vector){0, 0}, 2, true); // 初始化车车
 
     vector board_init[4] = { // 定义一个板子的原型
         {-1000, -1}, {-1000, 1}, {1000, 1}, {1000, -1},
     };
-    object board = {0};
-    init(&board, 1000, (vector){0, -100}, 1, false); // 初始化板板
+    object board = init(board_init, 1000, (vector){0, -100}, 1, false); // 初始化板板
     object *obj_list[] = { &car, &board };
 
     // 下面是环境变量
@@ -92,9 +95,9 @@ int main() {
             line_list[index] = lines;
             index++; // 计数
             
+        };
             /*我要开始写小众变态算法了，如果看不懂请不要问我，我大概也看不懂*/
             /*开始*/
-        };
 
         for (int i = 0; i < len; i++) { // 检测每个多边形是否active，不active的不更新运动状态
             // printf("进入二层循环循环");
@@ -125,11 +128,25 @@ int main() {
                 accumulator -= target_delta_t;
                 frame_count += 1;
                 
+                for (int j = 0; j < len, j!=i ;j++) {
+                    line *lines = line_list[j];
+                    int count = obj_list[j]->point_count;
+                    for (int q = 0; q < count; q++) {
+                        for (int p = 0; p < active_count; p++) {
+                            is_cross = cross(lines[q], line_list[i][p]);
+                            if (is_cross) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+                /*
                 // 下面我要开始写小众变态算法了
                 // 功能是遍历主动对象外的所有被动对象，使主动对象的所有边对被遍历到的被动对象的所有边进行相交检测，我把这视作一个简单的碰撞检测实现
                 if (i != 0 && len - i > 1) { // 如果i将object分为两个部分
                     for (int j = 0; j < i; j++) {
-                        line* lines = line_list[j]; // 得到表示此时迭代到的一个object的连段的一维数组，存储count个line类型的结构体
+                        line* lines = line_list[j]; // 得到表示此时迭代到的一个object的线段的一维数组，存储count个line类型的结构体
                         int count = obj_list[j]->point_count;
                         for (int q = 0; q < count; q++) {
                             for (int p = 0; p < active_count; p++) {
@@ -150,7 +167,7 @@ int main() {
                         break;
                     };
                     for (int j = i+1; j < len; j++) {
-                        line* lines = line_list[j]; // 得到表示此时迭代到的一个object的连段的一维数组，存储count个line类型的结构体
+                        line* lines = line_list[j]; // 得到表示此时迭代到的一个object的线段的一维数组，存储count个line类型的结构体
                         int count = obj_list[j]->point_count;
                         for (int q = 0; q < count; q++) {
                             for (int p = 0; p < active_count; p++) {
@@ -173,7 +190,7 @@ int main() {
                 };
                 if (i == 0) { // 如果i恰好是最左端
                     for (int j = i+1; j < len; j++) {
-                        line* lines = line_list[j]; // 得到表示此时迭代到的一个object的连段的一维数组，存储count个line类型的结构体
+                        line* lines = line_list[j]; // 得到表示此时迭代到的一个object的线段的一维数组，存储count个line类型的结构体
                         int count = obj_list[j]->point_count;
                         for (int q = 0; q < count; q++) {
                             for (int p = 0; p < active_count; p++) {
@@ -196,7 +213,7 @@ int main() {
                 };
                 if (i == len-1) { // 如果i恰好是最右端
                     for (int j = i+1; j < len; j++) {
-                        line* lines = line_list[j]; // 得到表示此时迭代到的一个object的连段的一维数组，存储count个line类型的结构体
+                        line* lines = line_list[j]; // 得到表示此时迭代到的一个object的线段的一维数组，存储count个line类型的结构体
                         int count = obj_list[j]->point_count;
                         for (int q = 0; q < count; q++) {
                             for (int p = 0; p < active_count; p++) {
@@ -220,6 +237,7 @@ int main() {
                 };
                 // 上述是史上弱智代码，你能对视十秒不笑吗
                 // 千万不要读，也不要让我解读
+                */
 
                 unsigned long elapsed = get_time() - frame_start;
                 if (elapsed < time_per_frame) {

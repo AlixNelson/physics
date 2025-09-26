@@ -7,7 +7,6 @@ typedef struct {
     double x;
     double y; 
 } vector; // 用一个结构体定义，可以是向量或坐标
-
 typedef struct {
     vector start;
     vector end;
@@ -47,7 +46,7 @@ double mut_vv(vector a, vector b) { // 点乘
     float muted = a.x * b.x + a.y * b.y;
     return muted;
 }
-vector divide_vv(vector a, vector b) { // 除法虽然大概不会用到但还是定义一下
+vector divide_vv(vector a, vector b) { // 除法虽然大概不会用到但还是定义一下，不对这个运算真的有意义吗
     vector dived = {
         .x = a.x / b.y,
         .y = a.y / b.y,
@@ -87,12 +86,8 @@ vector divide_vd(vector a, double b) {
 }
 // 其他暂时不定义，估计不会用到
 
-object car = {0};
 const vector G = {.x=0,.y=9.8};
 
-vector square[4] = { // 这是一个正方体的原型
-    {-1,-1},{-1,1},{1,1},{1,-1}
-};
 // 所有原型在被定义时务必顺序（顺时针或逆时针单程），否则在向量化时会发生严重逻辑问题, 参见函数init_polygonal和make_lines
 
 vector* init_polygonal/*初始化多边形*/(vector *points/*多边形原型*/,int count/*顶点数量，在init函数中被计算*/, float times /*倍率*/) {
@@ -103,26 +98,29 @@ vector* init_polygonal/*初始化多边形*/(vector *points/*多边形原型*/,i
     return new_points;
 }
 
-void init(object *car, float mass, vector position,int times, bool active) {
+object init(vector *square, float mass, vector position,int times, bool active) { // 后续的初始化必须加入Force参数
+    object car = {0};
     int count = sizeof(square)/sizeof(vector);
-    car->point = init_polygonal(square, count, times);
-    car->point_count = count;
-    car->mass = mass;
-    car->position = position;
-    car->prev_position = car->position;
-    car->F.x = 0;
-    car->F.y = -9.8 * car->mass; // 始终给它一个重力，但这样过于简化，我害怕后续复杂状态下可能丢失
-    car->a.y = -9.8;
-    car->active = active;
+    car.point = init_polygonal(square, count, times);
+    car.point_count = count;
+    car.mass = mass;
+    car.position = position;
+    car.prev_position = car.position;
+    car.F.x = 100;
+    car.F.y = -9.8 * car.mass; // 始终给它一个重力，但这样过于简化，我害怕后续复杂状态下可能丢失
+    car.a.y = -9.8;
+    car.active = active;
     /*
     car = (object) {.mass = 1000,.position = {.x = 0,.y = 0},.v = {.x = 0,.y = 0,},.F = {.x = 200,.y = 300,}};
     没用的东西，这是没有线条和点，只有质心时的初始化
     */
 
     double dt = 1.0 / 60.0; // 假设时间步长
-    car->prev_position.x = car->position.x - car->v.x * dt + 0.5 * car->a.x * dt * dt;
-    car->prev_position.y = car->position.y - car->v.y * dt + 0.5 * car->a.y * dt * dt;
+    car.prev_position.x = car.position.x - car.v.x * dt + 0.5 * car.a.x * dt * dt;
+    car.prev_position.y = car.position.y - car.v.y * dt + 0.5 * car.a.y * dt * dt;
     // 最后三行是AI写的，因为prev_position应当表示上一次更新的位置，于是进行一次逆运算，否则将引入误差
+
+    return car;
 }
 
 void newton(object *obj) { // 牛顿第二定律，但只是将合力化为加速度
