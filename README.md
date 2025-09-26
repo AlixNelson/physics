@@ -3,7 +3,10 @@
 # 用户文档
 ## phsysics.c
 ### 基本使用方法
-假设你有一个多边形，坐标为(a,b),(c,d),(e,f)我们需要先定义一个结构体数组vector image[count]{ {a,b},{c,d},{e,f}}作为原型，然后init(&image,double mass,vector position,int times,bool active)
+假设你有一个多边形，坐标为(a,b),(c,d),(e,f)我们需要先定义一个结构体数组
+    vector image[count]{ {a,b},{c,d},{e,f}}
+作为原型，然后
+    init(&image,double mass,vector position,int times,bool active)
 
 我们依次解释上述参数。
 
