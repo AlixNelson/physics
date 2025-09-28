@@ -87,7 +87,6 @@ vector divide_vd(vector a, double b) {
 }
 // 其他暂时不定义，估计不会用到
 
-object car = {0};
 const vector G = {.x=0,.y=9.8};
 
 vector square[4] = { // 这是一个正方体的原型
@@ -103,26 +102,29 @@ vector* init_polygonal/*初始化多边形*/(vector *points/*多边形原型*/,i
     return new_points;
 }
 
-void init(object *car, float mass, vector position,int times, bool active) {
+object init(vector *polygonal, float mass, vector position,int times, bool active) {
+    object car = {0};
     int count = sizeof(square)/sizeof(vector);
-    car->point = init_polygonal(square, count, times);
-    car->point_count = count;
-    car->mass = mass;
-    car->position = position;
-    car->prev_position = car->position;
-    car->F.x = 0;
-    car->F.y = -9.8 * car->mass; // 始终给它一个重力，但这样过于简化，我害怕后续复杂状态下可能丢失
-    car->a.y = -9.8;
-    car->active = active;
+    car.point = init_polygonal(square, count, times);
+    car.point_count = count;
+    car.mass = mass;
+    car.position = position;
+    car.prev_position = car.position;
+    car.F.x = 0;
+    car.F.y = -9.8 * car.mass; // 始终给它一个重力，但这样过于简化，我害怕后续复杂状态下可能丢失
+    car.a.y = -9.8;
+    car.active = active;
     /*
     car = (object) {.mass = 1000,.position = {.x = 0,.y = 0},.v = {.x = 0,.y = 0,},.F = {.x = 200,.y = 300,}};
     没用的东西，这是没有线条和点，只有质心时的初始化
     */
 
     double dt = 1.0 / 60.0; // 假设时间步长
-    car->prev_position.x = car->position.x - car->v.x * dt + 0.5 * car->a.x * dt * dt;
-    car->prev_position.y = car->position.y - car->v.y * dt + 0.5 * car->a.y * dt * dt;
+    car.prev_position.x = car.position.x - car.v.x * dt + 0.5 * car.a.x * dt * dt;
+    car.prev_position.y = car.position.y - car.v.y * dt + 0.5 * car.a.y * dt * dt;
     // 最后三行是AI写的，因为prev_position应当表示上一次更新的位置，于是进行一次逆运算，否则将引入误差
+
+    return car;
 }
 
 void newton(object *obj) { // 牛顿第二定律，但只是将合力化为加速度
