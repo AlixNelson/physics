@@ -7,6 +7,7 @@ typedef struct {
     double x;
     double y; 
 } vector; // 用一个结构体定义，可以是向量或坐标
+
 typedef struct {
     vector start;
     vector end;
@@ -46,7 +47,7 @@ double mut_vv(vector a, vector b) { // 点乘
     float muted = a.x * b.x + a.y * b.y;
     return muted;
 }
-vector divide_vv(vector a, vector b) { // 除法虽然大概不会用到但还是定义一下，不对这个运算真的有意义吗
+vector divide_vv(vector a, vector b) { // 除法虽然大概不会用到但还是定义一下
     vector dived = {
         .x = a.x / b.y,
         .y = a.y / b.y,
@@ -88,6 +89,9 @@ vector divide_vd(vector a, double b) {
 
 const vector G = {.x=0,.y=9.8};
 
+vector square[4] = { // 这是一个正方体的原型
+    {-1,-1},{-1,1},{1,1},{1,-1}
+};
 // 所有原型在被定义时务必顺序（顺时针或逆时针单程），否则在向量化时会发生严重逻辑问题, 参见函数init_polygonal和make_lines
 
 vector* init_polygonal/*初始化多边形*/(vector *points/*多边形原型*/,int count/*顶点数量，在init函数中被计算*/, float times /*倍率*/) {
@@ -118,11 +122,7 @@ object init(vector *polygonal, float mass, vector position,int times, bool activ
     double dt = 1.0 / 60.0; // 假设时间步长
     car.prev_position.x = car.position.x - car.v.x * dt + 0.5 * car.a.x * dt * dt;
     car.prev_position.y = car.position.y - car.v.y * dt + 0.5 * car.a.y * dt * dt;
-    car.prev_position.x = car.position.x - car.v.x * dt + 0.5 * car.a.x * dt * dt;
-    car.prev_position.y = car.position.y - car.v.y * dt + 0.5 * car.a.y * dt * dt;
     // 最后三行是AI写的，因为prev_position应当表示上一次更新的位置，于是进行一次逆运算，否则将引入误差
-
-    return car;
 
     return car;
 }
